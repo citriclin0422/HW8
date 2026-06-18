@@ -368,11 +368,14 @@ metric_cols[2].metric("Recall", f"{selected_metrics['recall']:.3f}")
 metric_cols[3].metric("F1", f"{selected_metrics['f1']:.3f}")
 metric_cols[4].metric("Support Vectors", len(support_vectors))
 
-tab_concept, tab_animation, tab_webgl, tab_2d, tab_3d, tab_metrics, tab_notes = st.tabs(
-    ["Concept", "Manim Animation", "WebGL 3D", "2D Boundary", "3D Kernel View", "Model Metrics", "Learning Notes"]
+view = st.radio(
+    "View",
+    ["Concept", "Manim Animation", "WebGL 3D", "2D Boundary", "3D Kernel View", "Model Metrics", "Learning Notes"],
+    horizontal=True,
+    label_visibility="collapsed",
 )
 
-with tab_concept:
+if view == "Concept":
     left, right = st.columns([1.1, 0.9])
     with left:
         st.subheader("Teaching flow")
@@ -396,7 +399,7 @@ with tab_concept:
         st.write(f"Gamma: `{gamma}`")
         st.write(rbf_similarity_note(gamma))
 
-with tab_animation:
+elif view == "Manim Animation":
     st.subheader("Manim concept animation")
     manim_video = find_manim_video()
     if manim_video:
@@ -429,19 +432,22 @@ with tab_animation:
         language="powershell",
     )
 
-with tab_webgl:
+elif view == "WebGL 3D":
     st.subheader("WebGL 3D kernel trick studio")
     st.write(
         "This Three.js view follows the classmate-style WebGL workflow: original 2D rings, "
         "animated lift to `z = x^2 + y^2`, separating plane, support vectors, and projected nonlinear boundary."
     )
+    webgl_samples = min(n_samples, 420)
+    if webgl_samples < n_samples:
+        st.caption(f"WebGL preview uses {webgl_samples} points for smoother browser interaction.")
     components.html(
-        create_webgl_svm_html(n_samples=n_samples, noise=noise, random_state=int(random_state)),
+        create_webgl_svm_html(n_samples=webgl_samples, noise=noise, random_state=int(random_state)),
         height=760,
         scrolling=False,
     )
 
-with tab_2d:
+elif view == "2D Boundary":
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(
@@ -454,14 +460,14 @@ with tab_2d:
             width="stretch",
         )
 
-with tab_3d:
+elif view == "3D Kernel View":
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(plot_3d_kernel_mapping(X, y), width="stretch")
     with c2:
         st.plotly_chart(plot_3d_decision_surface(bundle.selected_model, X, y), width="stretch")
 
-with tab_metrics:
+elif view == "Model Metrics":
     c1, c2 = st.columns([1.2, 0.8])
     with c1:
         st.plotly_chart(plot_model_comparison(linear_metrics, selected_metrics), width="stretch")
@@ -477,7 +483,7 @@ with tab_metrics:
         width="stretch",
     )
 
-with tab_notes:
+elif view == "Learning Notes":
     st.subheader("Parameter intuition")
     st.write(
         "**C** controls how strongly the model penalizes classification errors. "

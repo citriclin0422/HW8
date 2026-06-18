@@ -24,7 +24,7 @@ This project demonstrates how SVM handles nonlinear classification problems:
 - A teaching mapping `z = x1^2 + x2^2` helps explain the 2D to 3D intuition.
 - RBF SVM uses an implicit high-dimensional feature space through the kernel trick.
 - Streamlit controls let users adjust dataset type, noise, kernel, `C`, and `gamma`.
-- A WebGL 3D tab provides a Three.js interaction for the kernel trick workflow.
+- A WebGL 3D view provides a Three.js interaction for the kernel trick workflow.
 
 ## 繁體中文說明
 
@@ -120,7 +120,7 @@ python -m pip install -r requirements-dev.txt
 python -m manim -ql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir outputs/manim
 ```
 
-Then open the Streamlit app and go to the **Manim Animation** tab. The app automatically finds the newest `.mp4` from:
+Then open the Streamlit app and go to the **Manim Animation** view. The app automatically finds the newest `.mp4` from:
 
 - `outputs/videos`
 - `outputs/manim`
@@ -130,7 +130,7 @@ If no MP4 exists, the app falls back to `Kernel_method.gif`.
 
 ## WebGL 3D Interaction
 
-The **WebGL 3D** tab embeds a Three.js visualizer inspired by dashboard-style SVM demos:
+The **WebGL 3D** view embeds a Three.js visualizer inspired by dashboard-style SVM demos:
 
 - Step 1: original 2D concentric rings.
 - Step 2: animated lift to `z = x^2 + y^2`.
