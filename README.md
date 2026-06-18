@@ -2,17 +2,8 @@
 
 An educational Streamlit + Plotly project for learning Support Vector Machines (SVM), maximum margin, support vectors, and the kernel trick through interactive 2D/3D visualizations and a Manim concept animation.
 
-GitHub repository target: [citriclin0422/HW8.git](https://github.com/citriclin0422/HW8.git)
-
 Live demo: [https://hw8svmdemo.streamlit.app/](https://hw8svmdemo.streamlit.app/)
 
-Streamlit deploy page: [https://share.streamlit.io/deploy](https://share.streamlit.io/deploy)
-
-Recommended Streamlit main file:
-
-```text
-streamlit_app.py
-```
 
 ## Project Summary
 
