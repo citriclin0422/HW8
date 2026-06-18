@@ -371,6 +371,18 @@ st.caption("Explore how SVMs use margins, support vectors, and kernels to separa
 
 with st.sidebar:
     st.header("Controls")
+    view_options = [
+        "Concept",
+        "Manim Animation",
+        "WebGL 3D",
+        "2D Boundary",
+        "3D Kernel View",
+        "Model Metrics",
+        "Learning Notes",
+        "Quiz",
+    ]
+    view = st.selectbox("Chapter", view_options)
+    st.divider()
     dataset_type = st.selectbox("Dataset", ["circles", "moons", "linear", "blobs", "xor"])
     n_samples = st.slider("Samples", 100, 500, 300, step=50)
     noise = st.slider("Noise", 0.0, 0.30, 0.08, step=0.01)
@@ -386,12 +398,7 @@ gamma = custom_gamma if gamma_mode == "custom" else gamma_mode
 if kernel == "linear":
     gamma = "scale"
 
-view = st.radio(
-    "View",
-    ["Concept", "Manim Animation", "WebGL 3D", "2D Boundary", "3D Kernel View", "Model Metrics", "Learning Notes", "Quiz"],
-    horizontal=True,
-    label_visibility="collapsed",
-)
+st.caption(f"Current chapter: {view}")
 
 if view == "Concept":
     left, right = st.columns([1.1, 0.9])

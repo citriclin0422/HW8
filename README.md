@@ -25,6 +25,8 @@ Streamlit App 目前包含：
 - **Learning Notes**：解釋 `C`、`gamma`、support vectors 與 3D mapping。
 - **Quiz**：用五題小測驗複習 SVM 核心概念。
 
+章節切換位於左側 sidebar 的 **Chapter** 下拉選單。這比主畫面水平按鈕更適合 Streamlit Cloud，也比較不會受到大型圖表或 WebGL iframe 影響。
+
 ## Project Structure
 
 ```text
