@@ -590,26 +590,39 @@ with st.sidebar:
         index=view_options.index(st.session_state.get("chapter", "Concept")),
     )
     st.session_state["chapter"] = view
-    st.divider()
-    dataset_type = st.selectbox("Dataset", ["circles", "moons", "linear", "blobs", "xor"])
-    n_samples = st.slider("Samples", 100, 500, 300, step=50)
-    noise = st.slider("Noise", 0.0, 0.30, 0.08, step=0.01)
-    kernel = st.selectbox("Kernel", ["rbf", "linear", "poly"])
-    C = st.slider("C", 0.01, 100.0, 1.0, step=0.01, format="%.2f")
-    gamma_mode = st.selectbox("Gamma", ["scale", "auto", "custom"], disabled=kernel == "linear")
-    custom_gamma = st.slider("Custom gamma", 0.001, 10.0, 1.0, step=0.001, format="%.3f", disabled=gamma_mode != "custom" or kernel == "linear")
-    degree = st.slider("Poly degree", 2, 5, 3, disabled=kernel != "poly")
-    random_state = st.number_input("Random seed", min_value=0, max_value=9999, value=42, step=1)
-    st.caption("Tip: larger C fits training data more strictly; larger gamma makes RBF boundaries more local and complex.")
-
-gamma = custom_gamma if gamma_mode == "custom" else gamma_mode
-if kernel == "linear":
-    gamma = "scale"
+    st.caption("Use the visual chapter buttons in the main page or this selector to move through the lesson.")
 
 view = render_chapter_buttons(st.session_state["chapter"])
 st.caption(f"Current chapter: {view}")
 render_observation_tasks(view)
-render_parameter_panel(dataset_type, kernel, C, gamma, degree, noise)
+
+st.markdown("#### 參數設定與目前參數解讀")
+with st.container(border=True):
+    control_cols = st.columns([1.15, 1.0, 1.0])
+    with control_cols[0]:
+        dataset_type = st.selectbox("Dataset", ["circles", "moons", "linear", "blobs", "xor"])
+        n_samples = st.slider("Samples", 100, 500, 300, step=50)
+        random_state = st.number_input("Random seed", min_value=0, max_value=9999, value=42, step=1)
+    with control_cols[1]:
+        kernel = st.selectbox("Kernel", ["rbf", "linear", "poly"])
+        C = st.slider("C", 0.01, 100.0, 1.0, step=0.01, format="%.2f")
+        degree = st.slider("Poly degree", 2, 5, 3, disabled=kernel != "poly")
+    with control_cols[2]:
+        noise = st.slider("Noise", 0.0, 0.30, 0.08, step=0.01)
+        gamma_mode = st.selectbox("Gamma", ["scale", "auto", "custom"], disabled=kernel == "linear")
+        custom_gamma = st.slider(
+            "Custom gamma",
+            0.001,
+            10.0,
+            1.0,
+            step=0.001,
+            format="%.3f",
+            disabled=gamma_mode != "custom" or kernel == "linear",
+        )
+    gamma = custom_gamma if gamma_mode == "custom" else gamma_mode
+    if kernel == "linear":
+        gamma = "scale"
+    render_parameter_panel(dataset_type, kernel, C, gamma, degree, noise)
 
 if view == "Concept":
     left, right = st.columns([1.1, 0.9])
