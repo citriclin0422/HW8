@@ -29,7 +29,8 @@ GitHub Repository: [citriclin0422/HW8](https://github.com/citriclin0422/HW8.git)
 2. **Manim Animation**
    - 保留 Manim 動畫的本機渲染指令。
    - Streamlit Cloud 不即時執行 Manim，避免 Cairo、Pango、FFmpeg、OpenGL 等系統依賴造成部署失敗。
-   - 目前雲端頁面不載入 MP4，以維持互動流暢度。
+   - 網頁端提供手動載入 MP4 的選項，避免進入頁面時自動拖慢網站。
+   - 目前新版動畫長度約 30 秒內，內容對應 Phase-1 Manim 概念動畫。
 
 3. **WebGL 3D**
    - 使用 Three.js 展示 2D concentric rings。
@@ -128,6 +129,14 @@ python -m manim -ql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir 
 
 雲端部署端的 `requirements.txt` 不包含 `manim`，這樣可以避免 `glcontext`、`pycairo`、X11、Cairo、Pango 等原生套件建置錯誤。
 
+已預先渲染的 MP4 位於：
+
+```text
+outputs/manim/videos/svm_kernel_intro/480p15/SVMKernelIntro.mp4
+```
+
+Streamlit 的 **Manim Animation** 章節會在使用者勾選 **Load and play the Manim MP4** 後才載入影片。
+
 ## Streamlit Cloud 部署
 
 1. 將專案 push 到 GitHub：`citriclin0422/HW8.git`
@@ -150,7 +159,8 @@ streamlit_app.py
 
 - 移除 Streamlit Cloud 不必要的 CORS/XSRF server override，避免前端空白。
 - 移除雲端 `requirements.txt` 中的 Manim，避免原生依賴安裝失敗。
-- 停用雲端 MP4 載入，改善頁面流暢度。
+- 將雲端 MP4 改為手動載入，改善頁面流暢度。
+- 重新製作 30 秒內的 Phase-1 Manim 概念動畫，並以手動載入方式接回 Streamlit。
 - 將章節導覽移到 sidebar `Chapter` 下拉選單。
 - 修正 `streamlit_app.py` 的 rerun 問題：避免 `from app import *` 被 Python import cache 影響，造成主頁可見但互動後無法進入其他章節。
 - README 改為繁體中文說明專案流程與部署方法。

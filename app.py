@@ -431,10 +431,18 @@ if view == "Concept":
 
 elif view == "Manim Animation":
     st.subheader("Manim concept animation")
-    st.info(
-        "Video playback is temporarily disabled in the Streamlit app to test page performance. "
-        "The rendered MP4 remains in the GitHub repository, but this page does not load or display it."
+    st.write(
+        "This short Phase-1 animation follows the teaching blueprint: 2D nonlinear rings, "
+        "feature mapping, 3D lift, separating plane, and projected nonlinear boundary."
     )
+    video_path = find_manim_video()
+    if video_path is None:
+        st.warning("No rendered MP4 was found. Render the Manim scene locally first, then refresh this page.")
+    else:
+        size_mb = video_path.stat().st_size / (1024 * 1024)
+        st.caption(f"Rendered video: `{video_path.name}` ({size_mb:.2f} MB). It loads only after you enable playback.")
+        if st.checkbox("Load and play the Manim MP4", value=False):
+            st.video(str(video_path))
     st.code(
         "python -m manim -ql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir outputs/manim",
         language="powershell",
