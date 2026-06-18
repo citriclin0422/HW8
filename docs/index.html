@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SVM Kernel Trick 3D Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #0f172a;
+        background: #f8fafc;
+      }
+      body {
+        margin: 0;
+      }
+      header {
+        min-height: 68vh;
+        display: grid;
+        align-items: center;
+        background:
+          linear-gradient(rgba(15, 23, 42, 0.62), rgba(15, 23, 42, 0.50)),
+          url("assets/workflow.png") center 18% / cover;
+        color: white;
+      }
+      .wrap {
+        width: min(1120px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: clamp(42px, 7vw, 82px);
+        line-height: 0.95;
+        margin: 0 0 20px;
+        letter-spacing: 0;
+      }
+      .lead {
+        max-width: 720px;
+        font-size: 20px;
+        line-height: 1.6;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+      a.button {
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.12);
+      }
+      main {
+        padding: 42px 0 56px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+      .card {
+        background: white;
+        border: 1px solid #dbe3ef;
+        border-radius: 8px;
+        padding: 22px;
+      }
+      h2 {
+        margin-top: 0;
+      }
+      @media (max-width: 760px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <h1>SVM Kernel Trick 3D Demo</h1>
+        <p class="lead">An interactive learning project that connects maximum margin intuition, support vectors, nonlinear kernels, and rotatable 3D Plotly visualizations.</p>
+        <div class="actions">
+          <a class="button" href="https://streamlit.io/cloud" target="_blank" rel="noreferrer">Deploy on Streamlit</a>
+          <a class="button" href="https://github.com/citriclin0422/HW8" target="_blank" rel="noreferrer">GitHub Repository</a>
+        </div>
+      </div>
+    </header>
+    <main>
+      <div class="wrap">
+        <h2>Three Phase Learning Flow</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Phase 1: Manim Concept</h3>
+            <p>Show nonlinear 2D data, margin intuition, kernel mapping, and a 3D separating plane.</p>
+          </article>
+          <article class="card">
+            <h3>Phase 2: sklearn Model</h3>
+            <p>Generate datasets, train Linear and RBF SVMs, evaluate metrics, and highlight support vectors.</p>
+          </article>
+          <article class="card">
+            <h3>Phase 3: Streamlit + Plotly</h3>
+            <p>Control C, gamma, dataset shape, and noise while exploring live 2D and 3D decision plots.</p>
+          </article>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

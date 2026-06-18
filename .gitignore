@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.DS_Store
+outputs/models/*.joblib
+outputs/manim/**/partial_movie_files/
+outputs/manim/Tex/
+outputs/manim/texts/
+media/
+.streamlit/secrets.toml
