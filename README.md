@@ -1,58 +1,103 @@
-# SVM Kernel Trick 3D Interactive Demo
+# SVM Kernel Trick 3D 互動教學展示
 
-Live demo: [https://hw8svmdemo.streamlit.app/](https://hw8svmdemo.streamlit.app/)
+Live Demo: [https://hw8svm618.streamlit.app/](https://hw8svm618.streamlit.app/)
 
-An educational Streamlit project for learning Support Vector Machines (SVM), maximum margin, support vectors, and the kernel trick through interactive 2D/3D visualizations.
+GitHub Repository: [citriclin0422/HW8](https://github.com/citriclin0422/HW8.git)
 
-## 專案摘要
+本專案是一個以 **Support Vector Machine (SVM)** 為主題的互動式教學網站，使用 Streamlit、scikit-learn、Plotly 與 WebGL/Three.js 展示最大間隔、support vectors、kernel trick 與 3D 特徵映射的概念。
 
-這是一個 **Support Vector Machine (SVM) Kernel Trick 3D 互動教學展示**。設計重點是讓初學者能看懂：
+## 專案目標
+
+本網站希望讓學習者透過互動方式理解：
 
 - SVM 如何尋找最大 margin 的分類邊界。
-- Support vectors 為什麼是決定邊界的關鍵資料點。
-- 非線性資料，例如 circles、moons、XOR，為什麼無法只靠一條直線分開。
-- Kernel Trick 如何把原本 2D 中難分的資料，轉換成較容易分開的特徵空間。
-- `C`、`gamma`、`degree` 對 overfitting / underfitting 的影響。
+- Support vectors 為什麼會決定分類邊界的位置。
+- `C`、`gamma`、`degree` 這些參數如何影響模型複雜度。
+- 線性模型為什麼無法處理 circles、moons、XOR 等非線性資料。
+- Kernel Trick 如何將原本難以分割的 2D 資料轉換到較容易分割的特徵空間。
+- 3D 視覺化如何幫助理解 `z = x^2 + y^2` 這類教學用 feature mapping。
 
-Streamlit App 目前包含：
+## 網站流程
 
-- **Concept**：SVM 與 Kernel Trick 的教學流程與公式。
-- **Manim Animation**：保留本機預渲染指令；Cloud 端不即時執行 Manim。
-- **WebGL 3D**：使用 Three.js 展示 2D 圓形資料如何 lift 到 `z = x^2 + y^2`。
-- **2D Boundary**：比較 linear SVM 與目前選擇 kernel 的決策邊界。
-- **3D Kernel View**：顯示 kernel mapping 與 decision function surface。
-- **Model Metrics**：顯示 test/train accuracy、generalization gap、F1、support-vector ratio 與 confusion matrix。
-- **Learning Notes**：解釋 `C`、`gamma`、support vectors 與 3D mapping。
-- **Quiz**：用五題小測驗複習 SVM 核心概念。
+網站左側 sidebar 提供 **Chapter** 下拉選單，用來切換各教學章節：
 
-章節切換位於左側 sidebar 的 **Chapter** 下拉選單。這比主畫面水平按鈕更適合 Streamlit Cloud，也比較不會受到大型圖表或 WebGL iframe 影響。
+1. **Concept**
+   - 說明 SVM 教學流程。
+   - 顯示最大 margin、hyperplane、kernel mapping 等核心公式。
+   - 可選擇顯示教學設計概念圖。
 
-## Project Structure
+2. **Manim Animation**
+   - 保留 Manim 動畫的本機渲染指令。
+   - Streamlit Cloud 不即時執行 Manim，避免 Cairo、Pango、FFmpeg、OpenGL 等系統依賴造成部署失敗。
+   - 目前雲端頁面不載入 MP4，以維持互動流暢度。
+
+3. **WebGL 3D**
+   - 使用 Three.js 展示 2D concentric rings。
+   - 可互動觀察資料點從 2D lift 到 `z = x^2 + y^2`。
+   - 顯示 separating plane、support vectors、margin rings 與 mapping surface。
+
+4. **2D Boundary**
+   - 使用 scikit-learn `SVC` 訓練 SVM。
+   - 比較 linear SVM 與目前選擇 kernel 的 decision boundary。
+   - 顯示 support vectors 與 margin contour。
+
+5. **3D Kernel View**
+   - 顯示 explicit 3D kernel mapping。
+   - 顯示 SVM decision function surface。
+   - 幫助理解「2D 中非線性、轉換後較容易分割」的直覺。
+
+6. **Model Metrics**
+   - 顯示 test accuracy、train accuracy、generalization gap、F1、support-vector ratio。
+   - 顯示 confusion matrix 與模型比較圖。
+   - 可用來觀察 overfitting / underfitting。
+
+7. **Learning Notes**
+   - 說明 `C`、`gamma`、support vectors 與 3D mapping 的直覺。
+   - 補充 RBF kernel 並不是單純映射到一個可見 3D 軸，而是透過隱式高維相似度運算。
+
+8. **Quiz**
+   - 提供 SVM 核心概念小測驗。
+   - 透過選擇題複習 support vectors、C、gamma、margin 與 kernel trick。
+
+## 互動控制
+
+左側 sidebar 可調整：
+
+- `Dataset`: `circles`、`moons`、`linear`、`blobs`、`xor`
+- `Samples`: 100 到 500，避免雲端運算過重
+- `Noise`: 控制資料雜訊
+- `Kernel`: `rbf`、`linear`、`poly`
+- `C`: 控制錯誤分類懲罰強度
+- `Gamma`: `scale`、`auto` 或自訂數值
+- `Poly degree`: polynomial kernel 的 degree
+- `Random seed`: 控制資料生成隨機性
+
+## 專案結構
 
 ```text
 .
-|-- streamlit_app.py
-|-- app.py
-|-- requirements.txt
-|-- requirements-dev.txt
-|-- runtime.txt
+|-- streamlit_app.py          # Streamlit Cloud 入口檔
+|-- app.py                    # 主要 Streamlit app
+|-- requirements.txt          # 雲端部署用依賴，不包含 Manim
+|-- requirements-dev.txt      # 本機 Manim 開發依賴
+|-- runtime.txt               # Python 版本提示
 |-- README.md
 |-- src/
-|   |-- data_generator.py
-|   |-- kernel_transform.py
-|   |-- plotly_visualizer.py
-|   `-- svm_model.py
+|   |-- data_generator.py     # 產生教學資料集
+|   |-- kernel_transform.py   # 3D feature mapping
+|   |-- plotly_visualizer.py  # Plotly 2D/3D 圖表
+|   `-- svm_model.py          # SVM 訓練與評估
 |-- manim_scenes/
-|   `-- svm_kernel_intro.py
+|   `-- svm_kernel_intro.py   # Manim 教學動畫原始碼
 |-- outputs/
-|   `-- manim/
+|   `-- manim/                # 本機渲染輸出
 |-- docs/
 |   |-- index.html
 |   `-- assets/
-`-- *.png / *.gif teaching assets
+`-- *.png / *.gif             # 教學設計與參考素材
 ```
 
-## Installation
+## 本機執行
 
 Windows PowerShell:
 
@@ -60,6 +105,7 @@ Windows PowerShell:
 python -m venv .venv
 .\.venv\Scripts\activate
 python -m pip install -r requirements.txt
+python -m streamlit run streamlit_app.py
 ```
 
 macOS / Linux:
@@ -68,77 +114,54 @@ macOS / Linux:
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-```
-
-## Run Locally
-
-```powershell
 python -m streamlit run streamlit_app.py
 ```
 
-The local development entry point also works:
+## Manim 本機渲染
 
-```powershell
-python -m streamlit run app.py
-```
-
-## Manim Animation
-
-Manim should be rendered locally only. Streamlit Community Cloud should not install or run Manim because it requires native dependencies such as Cairo, Pango, FFmpeg, X11, and OpenGL context packages.
-
-Install optional development dependencies:
+Manim 只建議在本機渲染，不建議在 Streamlit Cloud 即時執行。
 
 ```powershell
 python -m pip install -r requirements-dev.txt
-```
-
-Render locally:
-
-```powershell
 python -m manim -ql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir outputs/manim
 ```
 
-The deployed Streamlit app currently keeps video playback disabled to preserve page smoothness. The Manim scene and render command remain in the repository for local review.
+雲端部署端的 `requirements.txt` 不包含 `manim`，這樣可以避免 `glcontext`、`pycairo`、X11、Cairo、Pango 等原生套件建置錯誤。
 
-## Streamlit Cloud Deployment
+## Streamlit Cloud 部署
 
-1. Push this project to GitHub repository: `citriclin0422/HW8.git`.
-2. Open [https://share.streamlit.io/deploy](https://share.streamlit.io/deploy).
-3. Choose the GitHub repository.
-4. Set the main file path to:
+1. 將專案 push 到 GitHub：`citriclin0422/HW8.git`
+2. 前往 [https://share.streamlit.io/deploy](https://share.streamlit.io/deploy)
+3. 選擇 GitHub repo
+4. Main file path 設定為：
 
 ```text
 streamlit_app.py
 ```
 
-5. Deploy the app.
+5. Python version 建議選 `3.12`
+6. Deploy 或 Reboot app
 
-Recommended Streamlit Cloud settings:
+目前正式展示網址：
 
-- Python version: `3.12`
-- Do not include `manim` in `requirements.txt`
-- Reboot the app after pushing changes that modify imports or cached modules
+[https://hw8svm618.streamlit.app/](https://hw8svm618.streamlit.app/)
 
-## Requirements
+## 已修正的重要問題
 
-`requirements.txt` intentionally stays small:
-
-```text
-numpy
-scikit-learn
-plotly
-streamlit
-```
-
-This keeps Streamlit Cloud deployment stable and avoids native build failures from Manim-related packages.
+- 移除 Streamlit Cloud 不必要的 CORS/XSRF server override，避免前端空白。
+- 移除雲端 `requirements.txt` 中的 Manim，避免原生依賴安裝失敗。
+- 停用雲端 MP4 載入，改善頁面流暢度。
+- 將章節導覽移到 sidebar `Chapter` 下拉選單。
+- 修正 `streamlit_app.py` 的 rerun 問題：避免 `from app import *` 被 Python import cache 影響，造成主頁可見但互動後無法進入其他章節。
+- README 改為繁體中文說明專案流程與部署方法。
 
 ## Troubleshooting
 
-- If the app starts but the page is blank, reboot the app in Streamlit Cloud.
-- If Streamlit Cloud uses Python 3.14, change the Python version to 3.12 in **Manage App -> Settings -> Advanced settings**.
-- If a new function import fails after deployment, push the latest code and reboot the app so Streamlit clears stale module state.
-- If the page feels slow, reduce `Samples` to 100-300 and avoid loading video assets inside the Cloud app.
+- 如果網站主頁出現但無法切換章節，請確認使用最新 commit，並在 Streamlit Cloud 按 **Reboot app**。
+- 如果 Cloud 使用 Python 3.14，建議在 **Manage App -> Settings -> Advanced settings** 改為 Python 3.12。
+- 如果部署時出現 Manim、glcontext、pycairo、X11、Cairo 相關錯誤，請確認 `requirements.txt` 沒有放 `manim`。
+- 如果互動圖表較慢，請將 `Samples` 調低到 100-300。
 
-## Notes
+## 備註
 
-The visible 3D mapping `z = x^2 + y^2` is a teaching simplification. A true RBF kernel does not literally map data into one visible 3D axis; it computes similarities in an implicit high-dimensional feature space.
+網站中的 `z = x^2 + y^2` 是教學用的可視化映射，用來幫助理解 Kernel Trick。真實 RBF kernel 並不是只映射到單一 3D 維度，而是透過隱式高維特徵空間與相似度計算達成非線性分類。
