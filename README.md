@@ -85,6 +85,12 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
+For local Manim rendering, install the optional development requirements:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+```
+
 ## Run Locally
 
 Recommended Streamlit Cloud-compatible entry point:
@@ -101,9 +107,12 @@ python -m streamlit run app.py
 
 ## Render The Manim Animation
 
-The repository includes a rendered MP4 target under `outputs/manim` when generated locally. To regenerate it:
+The repository includes a rendered MP4 target under `outputs/manim` when generated locally. Streamlit Cloud only plays the rendered MP4; it does not install Manim or render videos during deployment.
+
+To regenerate the animation locally:
 
 ```powershell
+python -m pip install -r requirements-dev.txt
 python -m manim -ql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir outputs/manim
 ```
 
@@ -129,6 +138,8 @@ streamlit_app.py
 ```
 
 5. Deploy the app.
+
+Important: `requirements.txt` intentionally excludes `manim`. Manim depends on native Linux graphics libraries such as Cairo, X11, and OpenGL context packages that are not needed for the deployed app. The deployed app uses the pre-rendered MP4 already stored in this repository.
 
 ## GitHub Push Commands
 
