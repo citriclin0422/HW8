@@ -7,17 +7,6 @@ from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 
-from src.data_generator import generate_dataset
-from src.kernel_transform import rbf_similarity_note
-from src.plotly_visualizer import (
-    plot_2d_decision_boundary,
-    plot_3d_decision_surface,
-    plot_3d_kernel_mapping,
-    plot_confusion_matrix,
-    plot_model_comparison,
-)
-from src.svm_model import evaluate_model, get_support_vectors, train_svm_models
-
 
 PROJECT_ROOT = Path(__file__).parent
 CONCEPT_IMAGE = PROJECT_ROOT / "SVM_3D教學設計概念圖表.png"
@@ -41,6 +30,38 @@ def find_manim_video() -> Path | None:
             if videos:
                 return videos[0]
     return None
+
+
+@st.cache_data(show_spinner=False)
+def get_demo_state(
+    dataset_type: str,
+    n_samples: int,
+    noise: float,
+    kernel: str,
+    C: float,
+    gamma: str | float,
+    random_state: int,
+):
+    """Generate data and train models only when a model view needs them."""
+    from src.data_generator import generate_dataset
+    from src.svm_model import evaluate_model, get_support_vectors, train_svm_models
+
+    X, y = generate_dataset(dataset_type, n_samples, noise, random_state)
+    bundle = train_svm_models(X, y, kernel=kernel, C=C, gamma=gamma)
+    linear_metrics = evaluate_model(bundle.linear_model, bundle.X_test, bundle.y_test)
+    selected_metrics = evaluate_model(bundle.selected_model, bundle.X_test, bundle.y_test)
+    support_vectors = get_support_vectors(bundle.selected_model)
+    return X, y, bundle, linear_metrics, selected_metrics, support_vectors
+
+
+def render_metric_strip(selected_metrics: dict[str, object], support_vector_count: int) -> None:
+    """Render model metrics after the selected model has been trained."""
+    metric_cols = st.columns(5)
+    metric_cols[0].metric("Accuracy", f"{selected_metrics['accuracy']:.3f}")
+    metric_cols[1].metric("Precision", f"{selected_metrics['precision']:.3f}")
+    metric_cols[2].metric("Recall", f"{selected_metrics['recall']:.3f}")
+    metric_cols[3].metric("F1", f"{selected_metrics['f1']:.3f}")
+    metric_cols[4].metric("Support Vectors", support_vector_count)
 
 
 def create_webgl_svm_html(n_samples: int, noise: float, random_state: int) -> str:
@@ -131,7 +152,7 @@ def create_webgl_svm_html(n_samples: int, noise: float, random_state: int) -> st
       <h2>WebGL Controls</h2>
       <h3>Kernel Trick Steps</h3>
       <button class="btn active" id="step2d">Step 1: original 2D rings</button>
-      <button class="btn" id="step3d">Step 2: lift to z = x² + y²</button>
+      <button class="btn" id="step3d">Step 2: lift to z = x^2 + y^2</button>
       <button class="btn" id="stepProject">Step 3: projected 2D boundary</button>
       <h3>Layers</h3>
       <label class="toggle"><input type="checkbox" id="planeToggle" checked> Show separating plane</label>
@@ -149,7 +170,7 @@ def create_webgl_svm_html(n_samples: int, noise: float, random_state: int) -> st
         <p><span class="legend-dot blue"></span>Inner class</p>
         <p><span class="legend-dot orange"></span>Outer class</p>
         <p><span class="legend-dot yellow"></span>Support vectors / margin</p>
-        <p>The explicit surface uses <code>z = x² + y²</code> as a teaching mapping. A real RBF kernel works implicitly through similarities.</p>
+        <p>The explicit surface uses <code>z = x^2 + y^2</code> as a teaching mapping. A real RBF kernel works implicitly through similarities.</p>
       </div>
     </section>
   </div>
@@ -277,7 +298,7 @@ def create_webgl_svm_html(n_samples: int, noise: float, random_state: int) -> st
       if (mode === '2d') {{
         info.innerHTML = '<h3>Step 1: Original 2D</h3><p>The inner and outer rings are not linearly separable by one straight line.</p><p>Try rotating the view: all points are still on the flat z=0 plane.</p>';
       }} else if (mode === '3d') {{
-        info.innerHTML = '<h3>Step 2: Feature Mapping</h3><p>Each point is lifted by <code>z = x² + y²</code>. The outer class moves higher, making a horizontal separating plane possible.</p>';
+        info.innerHTML = '<h3>Step 2: Feature Mapping</h3><p>Each point is lifted by <code>z = x^2 + y^2</code>. The outer class moves higher, making a horizontal separating plane possible.</p>';
       }} else {{
         info.innerHTML = '<h3>Step 3: Project Back</h3><p>The 3D separating plane becomes a circular nonlinear boundary in the original 2D view.</p><p>This mirrors the kernel trick intuition.</p>';
       }}
@@ -355,19 +376,6 @@ gamma = custom_gamma if gamma_mode == "custom" else gamma_mode
 if kernel == "linear":
     gamma = "scale"
 
-X, y = generate_dataset(dataset_type, n_samples, noise, int(random_state))
-bundle = train_svm_models(X, y, kernel=kernel, C=C, gamma=gamma)
-linear_metrics = evaluate_model(bundle.linear_model, bundle.X_test, bundle.y_test)
-selected_metrics = evaluate_model(bundle.selected_model, bundle.X_test, bundle.y_test)
-support_vectors = get_support_vectors(bundle.selected_model)
-
-metric_cols = st.columns(5)
-metric_cols[0].metric("Accuracy", f"{selected_metrics['accuracy']:.3f}")
-metric_cols[1].metric("Precision", f"{selected_metrics['precision']:.3f}")
-metric_cols[2].metric("Recall", f"{selected_metrics['recall']:.3f}")
-metric_cols[3].metric("F1", f"{selected_metrics['f1']:.3f}")
-metric_cols[4].metric("Support Vectors", len(support_vectors))
-
 view = st.radio(
     "View",
     ["Concept", "Manim Animation", "WebGL 3D", "2D Boundary", "3D Kernel View", "Model Metrics", "Learning Notes"],
@@ -384,7 +392,7 @@ if view == "Concept":
             "map them through a feature function, separate them in a 3D feature view, project the idea back "
             "to a nonlinear 2D boundary, then compare it with the real RBF SVM decision function."
         )
-        if CONCEPT_IMAGE.exists():
+        if CONCEPT_IMAGE.exists() and st.checkbox("Show teaching blueprint image"):
             st.image(str(CONCEPT_IMAGE), caption="SVM Kernel Trick 3D teaching blueprint")
     with right:
         st.subheader("Core equations")
@@ -397,7 +405,7 @@ if view == "Concept":
         st.write(f"Kernel: `{kernel}`")
         st.write(f"C: `{C:.2f}`")
         st.write(f"Gamma: `{gamma}`")
-        st.write(rbf_similarity_note(gamma))
+        st.write(f"K(x, z) = exp(-{gamma} * ||x - z||^2)")
 
 elif view == "Manim Animation":
     st.subheader("Manim concept animation")
@@ -426,6 +434,13 @@ elif view == "WebGL 3D":
     )
 
 elif view == "2D Boundary":
+    from src.plotly_visualizer import plot_2d_decision_boundary
+
+    with st.spinner("Training SVM models for the 2D boundary view..."):
+        X, y, bundle, linear_metrics, selected_metrics, support_vectors = get_demo_state(
+            dataset_type, n_samples, noise, kernel, C, gamma, int(random_state)
+        )
+    render_metric_strip(selected_metrics, len(support_vectors))
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(
@@ -439,6 +454,13 @@ elif view == "2D Boundary":
         )
 
 elif view == "3D Kernel View":
+    from src.plotly_visualizer import plot_3d_decision_surface, plot_3d_kernel_mapping
+
+    with st.spinner("Training SVM models for the 3D view..."):
+        X, y, bundle, linear_metrics, selected_metrics, support_vectors = get_demo_state(
+            dataset_type, n_samples, noise, kernel, C, gamma, int(random_state)
+        )
+    render_metric_strip(selected_metrics, len(support_vectors))
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(plot_3d_kernel_mapping(X, y), width="stretch")
@@ -446,6 +468,13 @@ elif view == "3D Kernel View":
         st.plotly_chart(plot_3d_decision_surface(bundle.selected_model, X, y), width="stretch")
 
 elif view == "Model Metrics":
+    from src.plotly_visualizer import plot_confusion_matrix, plot_model_comparison
+
+    with st.spinner("Training SVM models for metrics..."):
+        X, y, bundle, linear_metrics, selected_metrics, support_vectors = get_demo_state(
+            dataset_type, n_samples, noise, kernel, C, gamma, int(random_state)
+        )
+    render_metric_strip(selected_metrics, len(support_vectors))
     c1, c2 = st.columns([1.2, 0.8])
     with c1:
         st.plotly_chart(plot_model_comparison(linear_metrics, selected_metrics), width="stretch")
