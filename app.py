@@ -12,6 +12,52 @@ PROJECT_ROOT = Path(__file__).parent
 CONCEPT_IMAGE = PROJECT_ROOT / "SVM_3D教學設計概念圖表.png"
 FALLBACK_GIF = PROJECT_ROOT / "Kernel_method.gif"
 
+CHAPTERS = [
+    ("Concept", "01 Concept", "核心故事"),
+    ("Manim Animation", "02 Manim", "概念動畫"),
+    ("WebGL 3D", "03 WebGL", "3D 操作"),
+    ("2D Boundary", "04 Boundary", "決策邊界"),
+    ("3D Kernel View", "05 Surface", "3D 曲面"),
+    ("Model Metrics", "06 Metrics", "模型診斷"),
+    ("Learning Notes", "07 Notes", "學習筆記"),
+    ("Quiz", "08 Quiz", "小測驗"),
+]
+
+TASKS = {
+    "Concept": [
+        "先確認 2D 圓形資料為什麼不能用直線分開。",
+        "觀察公式 phi(x, y) 如何把半徑資訊變成 z 軸高度。",
+    ],
+    "Manim Animation": [
+        "播放動畫後，找出 2D、3D、投影回 2D 三個關鍵畫面。",
+        "注意最後的提醒：RBF kernel 是隱式高維映射，不只是單一 3D 圖。",
+    ],
+    "WebGL 3D": [
+        "依序點 Step 1、Step 2、Step 3，觀察資料如何被 lift。",
+        "關閉或開啟 separating plane、support vectors、margin rings，比較視覺差異。",
+    ],
+    "2D Boundary": [
+        "把 dataset 切到 circles，再比較 linear 與 rbf 的邊界差異。",
+        "提高 gamma 或 C，觀察邊界是否變得更貼近資料點。",
+    ],
+    "3D Kernel View": [
+        "左圖看顯式 3D mapping，右圖看真實 SVM decision function。",
+        "切換 kernel 後，觀察 decision surface 是否更彎曲。",
+    ],
+    "Model Metrics": [
+        "觀察 train/test accuracy gap，判斷是否開始 overfit。",
+        "比較 support-vector ratio，理解有多少資料點正在支撐邊界。",
+    ],
+    "Learning Notes": [
+        "讀完 C 與 gamma 後，回到 2D Boundary 實際操作驗證。",
+        "把 notes 和 WebGL 3D 互相對照，區分教學映射與真實 RBF。",
+    ],
+    "Quiz": [
+        "先不看 Learning Notes 直接作答，再回去檢查錯題。",
+        "答錯時讀提示，確認自己能用一句話解釋 support vectors。",
+    ],
+}
+
 
 def find_manim_video() -> Path | None:
     """Find a rendered Manim video if one exists."""
@@ -30,6 +76,162 @@ def find_manim_video() -> Path | None:
             if videos:
                 return videos[0]
     return None
+
+
+def inject_ui_css() -> None:
+    """Add lightweight CSS for the teaching dashboard."""
+    st.markdown(
+        """
+        <style>
+        .block-container { padding-top: 1.4rem; }
+        div[data-testid="stMetric"] {
+            background: #f8fafc;
+            border: 1px solid #dbe4ee;
+            border-radius: 8px;
+            padding: 0.65rem 0.75rem;
+        }
+        .svm-card {
+            border: 1px solid #d7e3f3;
+            border-radius: 8px;
+            padding: 0.85rem 0.95rem;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+            margin-bottom: 0.8rem;
+        }
+        .svm-card h4 {
+            margin: 0 0 0.45rem 0;
+            color: #0f3b78;
+            font-size: 1rem;
+        }
+        .svm-card p, .svm-card li {
+            color: #334155;
+            font-size: 0.94rem;
+            line-height: 1.45;
+        }
+        .status-good { border-left: 5px solid #16a34a; }
+        .status-watch { border-left: 5px solid #d97706; }
+        .status-risk { border-left: 5px solid #dc2626; }
+        .param-chip {
+            display: inline-block;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            border-radius: 999px;
+            padding: 0.22rem 0.55rem;
+            margin: 0.1rem 0.18rem 0.1rem 0;
+            font-size: 0.82rem;
+            color: #1f2937;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_chapter_buttons(current_view: str) -> str:
+    """Render visual chapter navigation while keeping sidebar navigation available."""
+    st.markdown("#### Chapter Navigator")
+    cols = st.columns(4)
+    selected = current_view
+    for index, (chapter, label, caption) in enumerate(CHAPTERS):
+        active_marker = " [current]" if chapter == current_view else ""
+        with cols[index % 4]:
+            if st.button(f"{label}{active_marker}\n{caption}", key=f"chapter_btn_{chapter}", use_container_width=True):
+                st.session_state["chapter"] = chapter
+                selected = chapter
+                st.rerun()
+    return selected
+
+
+def render_observation_tasks(view: str) -> None:
+    """Show a compact teaching task card for the active chapter."""
+    tasks = TASKS.get(view, [])
+    if not tasks:
+        return
+    items = "".join(f"<li>{task}</li>" for task in tasks)
+    st.markdown(
+        f"""
+        <div class="svm-card">
+          <h4>觀察任務</h4>
+          <ul>{items}</ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def get_parameter_insight(dataset_type: str, kernel: str, C: float, gamma: str | float, degree: int, noise: float) -> list[str]:
+    """Return short teaching hints for the current parameter combination."""
+    notes: list[str] = []
+    if dataset_type in {"circles", "moons", "xor"} and kernel == "linear":
+        notes.append("目前是非線性資料搭配 linear kernel，預期邊界會不足以完整分開資料。")
+    if kernel == "rbf":
+        notes.append("RBF kernel 適合彎曲邊界；請觀察 gamma 對邊界局部性的影響。")
+    if kernel == "poly":
+        notes.append(f"Polynomial kernel 目前 degree = {degree}，degree 越高通常邊界越複雜。")
+    if C >= 20:
+        notes.append("C 偏高，模型會更努力符合訓練資料，需注意 overfitting。")
+    elif C <= 0.1:
+        notes.append("C 偏低，模型容忍更多錯誤，邊界通常較平滑但可能 underfit。")
+    if isinstance(gamma, (int, float)) and gamma >= 3:
+        notes.append("gamma 偏高，每個點的影響範圍較小，RBF 邊界可能變得細碎。")
+    if noise >= 0.2:
+        notes.append("noise 偏高，請比較 train/test gap，避免只看訓練表現。")
+    if not notes:
+        notes.append("目前參數屬於穩健起點，適合先觀察資料形狀與支援向量位置。")
+    return notes
+
+
+def render_parameter_panel(dataset_type: str, kernel: str, C: float, gamma: str | float, degree: int, noise: float) -> None:
+    """Render an explanation panel for the active settings."""
+    chips = [
+        f"Dataset: {dataset_type}",
+        f"Kernel: {kernel}",
+        f"C: {C:.2f}",
+        f"Gamma: {gamma}",
+        f"Noise: {noise:.2f}",
+    ]
+    if kernel == "poly":
+        chips.append(f"Degree: {degree}")
+    chip_html = "".join(f'<span class="param-chip">{chip}</span>' for chip in chips)
+    notes = "".join(f"<li>{note}</li>" for note in get_parameter_insight(dataset_type, kernel, C, gamma, degree, noise))
+    st.markdown(
+        f"""
+        <div class="svm-card">
+          <h4>目前參數解讀</h4>
+          <p>{chip_html}</p>
+          <ul>{notes}</ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_model_status(train_metrics: dict[str, object], selected_metrics: dict[str, object], support_vector_count: int, sample_count: int) -> None:
+    """Show a visual model health card based on train/test gap and support-vector ratio."""
+    gap = train_metrics["accuracy"] - selected_metrics["accuracy"]
+    sv_ratio = support_vector_count / sample_count
+    if gap > 0.15:
+        status_class = "status-risk"
+        title = "模型狀態：高過擬合風險"
+        message = "訓練分數明顯高於測試分數。可以降低 C、降低 gamma，或增加資料雜訊觀察邊界是否更穩定。"
+    elif gap > 0.06:
+        status_class = "status-watch"
+        title = "模型狀態：需要觀察"
+        message = "train/test gap 有一點拉開。請搭配 2D 邊界與 support-vector ratio 判斷是否過度貼合。"
+    else:
+        status_class = "status-good"
+        title = "模型狀態：泛化表現穩定"
+        message = "目前 train/test gap 很小，模型表現相對穩定。可以嘗試提高 gamma 或 C 觀察何時開始 overfit。"
+    st.markdown(
+        f"""
+        <div class="svm-card {status_class}">
+          <h4>{title}</h4>
+          <p>Train/Test gap: <b>{gap:+.3f}</b> ｜ Support-vector ratio: <b>{sv_ratio:.1%}</b></p>
+          <p>{message}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -366,22 +568,23 @@ st.set_page_config(
     layout="wide",
 )
 
+inject_ui_css()
+
 st.title("SVM Kernel Trick 3D Interactive Demo")
 st.caption("Explore how SVMs use margins, support vectors, and kernels to separate nonlinear data.")
 
+if "chapter" not in st.session_state:
+    st.session_state["chapter"] = "Concept"
+
 with st.sidebar:
     st.header("Controls")
-    view_options = [
-        "Concept",
-        "Manim Animation",
-        "WebGL 3D",
-        "2D Boundary",
-        "3D Kernel View",
-        "Model Metrics",
-        "Learning Notes",
-        "Quiz",
-    ]
-    view = st.selectbox("Chapter", view_options)
+    view_options = [chapter for chapter, _, _ in CHAPTERS]
+    view = st.selectbox(
+        "Chapter",
+        view_options,
+        index=view_options.index(st.session_state.get("chapter", "Concept")),
+    )
+    st.session_state["chapter"] = view
     st.divider()
     dataset_type = st.selectbox("Dataset", ["circles", "moons", "linear", "blobs", "xor"])
     n_samples = st.slider("Samples", 100, 500, 300, step=50)
@@ -398,7 +601,10 @@ gamma = custom_gamma if gamma_mode == "custom" else gamma_mode
 if kernel == "linear":
     gamma = "scale"
 
+view = render_chapter_buttons(st.session_state["chapter"])
 st.caption(f"Current chapter: {view}")
+render_observation_tasks(view)
+render_parameter_panel(dataset_type, kernel, C, gamma, degree, noise)
 
 if view == "Concept":
     left, right = st.columns([1.1, 0.9])
@@ -471,6 +677,7 @@ elif view == "2D Boundary":
             dataset_type, n_samples, noise, kernel, C, gamma, degree, int(random_state)
         )
     render_metric_strip(selected_metrics, train_metrics, len(support_vectors), len(X))
+    render_model_status(train_metrics, selected_metrics, len(support_vectors), len(X))
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(
@@ -491,6 +698,7 @@ elif view == "3D Kernel View":
             dataset_type, n_samples, noise, kernel, C, gamma, degree, int(random_state)
         )
     render_metric_strip(selected_metrics, train_metrics, len(support_vectors), len(X))
+    render_model_status(train_metrics, selected_metrics, len(support_vectors), len(X))
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(plot_3d_kernel_mapping(X, y), width="stretch")
@@ -505,6 +713,7 @@ elif view == "Model Metrics":
             dataset_type, n_samples, noise, kernel, C, gamma, degree, int(random_state)
         )
     render_metric_strip(selected_metrics, train_metrics, len(support_vectors), len(X))
+    render_model_status(train_metrics, selected_metrics, len(support_vectors), len(X))
     c1, c2 = st.columns([1.2, 0.8])
     with c1:
         st.plotly_chart(plot_model_comparison(linear_metrics, selected_metrics), width="stretch")

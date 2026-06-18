@@ -21,6 +21,8 @@ GitHub Repository: [citriclin0422/HW8](https://github.com/citriclin0422/HW8.git)
 
 網站左側 sidebar 提供 **Chapter** 下拉選單，用來切換各教學章節：
 
+主畫面上方也提供 **Chapter Navigator** 視覺化章節按鈕，方便使用者用更直覺的方式切換教學流程。每個章節會顯示「觀察任務」與「目前參數解讀」，引導使用者知道該調整哪些參數、觀察哪些圖形變化。
+
 1. **Concept**
    - 說明 SVM 教學流程。
    - 顯示最大 margin、hyperplane、kernel mapping 等核心公式。
@@ -72,6 +74,16 @@ GitHub Repository: [citriclin0422/HW8](https://github.com/citriclin0422/HW8.git)
 - `Gamma`: `scale`、`auto` 或自訂數值
 - `Poly degree`: polynomial kernel 的 degree
 - `Random seed`: 控制資料生成隨機性
+
+## 互動介面強化
+
+本版新增下列互動式教學元素：
+
+- **Chapter Navigator**：主畫面上方的章節按鈕列，可快速切換 Concept、Manim、WebGL、2D Boundary、3D Surface、Metrics、Notes、Quiz。
+- **觀察任務卡**：每個章節提供 1-2 個操作任務，引導使用者觀察 SVM 邊界、support vectors、kernel mapping 或模型指標。
+- **目前參數解讀**：依據 dataset、kernel、`C`、`gamma`、`degree`、noise 自動產生簡短說明。
+- **模型狀態燈**：在 2D Boundary、3D Kernel View、Model Metrics 中，用 train/test gap 判斷目前模型是否穩定、需要觀察或有 overfitting 風險。
+- **手動載入 Manim MP4**：影片不自動載入，避免拖慢頁面；使用者進入 Manim Animation 後可自行勾選播放。
 
 ## 專案結構
 
@@ -161,6 +173,7 @@ streamlit_app.py
 - 移除雲端 `requirements.txt` 中的 Manim，避免原生依賴安裝失敗。
 - 將雲端 MP4 改為手動載入，改善頁面流暢度。
 - 重新製作 30 秒內的 Phase-1 Manim 概念動畫，並以手動載入方式接回 Streamlit。
+- 新增 Chapter Navigator、觀察任務卡、參數解讀卡與模型狀態燈，強化互動教學體驗。
 - 將章節導覽移到 sidebar `Chapter` 下拉選單。
 - 修正 `streamlit_app.py` 的 rerun 問題：避免 `from app import *` 被 Python import cache 影響，造成主頁可見但互動後無法進入其他章節。
 - README 改為繁體中文說明專案流程與部署方法。
