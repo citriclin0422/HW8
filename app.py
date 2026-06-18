@@ -400,8 +400,21 @@ with tab_animation:
     st.subheader("Manim concept animation")
     manim_video = find_manim_video()
     if manim_video:
-        st.video(str(manim_video))
-        st.caption(f"Loaded rendered Manim video: `{manim_video.relative_to(PROJECT_ROOT)}`")
+        video_bytes = manim_video.read_bytes()
+        st.video(video_bytes, format="video/mp4")
+        st.caption(
+            f"Loaded rendered Manim video: `{manim_video.relative_to(PROJECT_ROOT)}` "
+            f"({len(video_bytes) / 1024 / 1024:.2f} MB)"
+        )
+        st.download_button(
+            "Download MP4",
+            data=video_bytes,
+            file_name="SVMKernelIntro.mp4",
+            mime="video/mp4",
+        )
+        if FALLBACK_GIF.exists():
+            with st.expander("Show GIF fallback preview"):
+                st.image(str(FALLBACK_GIF), caption="GIF fallback preview")
     elif FALLBACK_GIF.exists():
         st.image(str(FALLBACK_GIF), caption="Fallback animation preview. Render the Manim scene to replace this with MP4.")
     else:
