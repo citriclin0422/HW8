@@ -155,6 +155,8 @@ streamlit_app.py
 
 Important: `requirements.txt` intentionally excludes `manim`. Manim depends on native Linux graphics libraries such as Cairo, X11, and OpenGL context packages that are not needed for the deployed app. The deployed app uses the pre-rendered MP4 already stored in this repository.
 
+This repository includes `runtime.txt` to request Python 3.12 on Streamlit Cloud. This avoids using a very new Python runtime when ML/visualization packages have not fully stabilized on it.
+
 ## GitHub Push Commands
 
 If this folder has not been initialized as a Git repository yet:
