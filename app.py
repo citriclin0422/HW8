@@ -40,6 +40,7 @@ def get_demo_state(
     kernel: str,
     C: float,
     gamma: str | float,
+    degree: int,
     random_state: int,
 ):
     """Generate data and train models only when a model view needs them."""
@@ -47,21 +48,28 @@ def get_demo_state(
     from src.svm_model import evaluate_model, get_support_vectors, train_svm_models
 
     X, y = generate_dataset(dataset_type, n_samples, noise, random_state)
-    bundle = train_svm_models(X, y, kernel=kernel, C=C, gamma=gamma)
+    bundle = train_svm_models(X, y, kernel=kernel, C=C, gamma=gamma, degree=degree, random_state=random_state)
     linear_metrics = evaluate_model(bundle.linear_model, bundle.X_test, bundle.y_test)
     selected_metrics = evaluate_model(bundle.selected_model, bundle.X_test, bundle.y_test)
+    train_metrics = evaluate_model(bundle.selected_model, bundle.X_train, bundle.y_train)
     support_vectors = get_support_vectors(bundle.selected_model)
-    return X, y, bundle, linear_metrics, selected_metrics, support_vectors
+    return X, y, bundle, linear_metrics, selected_metrics, train_metrics, support_vectors
 
 
-def render_metric_strip(selected_metrics: dict[str, object], support_vector_count: int) -> None:
+def render_metric_strip(
+    selected_metrics: dict[str, object],
+    train_metrics: dict[str, object],
+    support_vector_count: int,
+    sample_count: int,
+) -> None:
     """Render model metrics after the selected model has been trained."""
     metric_cols = st.columns(5)
-    metric_cols[0].metric("Accuracy", f"{selected_metrics['accuracy']:.3f}")
-    metric_cols[1].metric("Precision", f"{selected_metrics['precision']:.3f}")
-    metric_cols[2].metric("Recall", f"{selected_metrics['recall']:.3f}")
+    generalization_gap = train_metrics["accuracy"] - selected_metrics["accuracy"]
+    metric_cols[0].metric("Test Accuracy", f"{selected_metrics['accuracy']:.3f}")
+    metric_cols[1].metric("Train Accuracy", f"{train_metrics['accuracy']:.3f}")
+    metric_cols[2].metric("Gap", f"{generalization_gap:+.3f}")
     metric_cols[3].metric("F1", f"{selected_metrics['f1']:.3f}")
-    metric_cols[4].metric("Support Vectors", support_vector_count)
+    metric_cols[4].metric("SV Ratio", f"{support_vector_count / sample_count:.1%}")
 
 
 def create_webgl_svm_html(n_samples: int, noise: float, random_state: int) -> str:
@@ -363,14 +371,16 @@ st.caption("Explore how SVMs use margins, support vectors, and kernels to separa
 
 with st.sidebar:
     st.header("Controls")
-    dataset_type = st.selectbox("Dataset", ["circles", "moons", "xor"])
-    n_samples = st.slider("Samples", 100, 1000, 300, step=50)
+    dataset_type = st.selectbox("Dataset", ["circles", "moons", "linear", "blobs", "xor"])
+    n_samples = st.slider("Samples", 100, 500, 300, step=50)
     noise = st.slider("Noise", 0.0, 0.30, 0.08, step=0.01)
     kernel = st.selectbox("Kernel", ["rbf", "linear", "poly"])
     C = st.slider("C", 0.01, 100.0, 1.0, step=0.01, format="%.2f")
     gamma_mode = st.selectbox("Gamma", ["scale", "auto", "custom"], disabled=kernel == "linear")
     custom_gamma = st.slider("Custom gamma", 0.001, 10.0, 1.0, step=0.001, format="%.3f", disabled=gamma_mode != "custom" or kernel == "linear")
+    degree = st.slider("Poly degree", 2, 5, 3, disabled=kernel != "poly")
     random_state = st.number_input("Random seed", min_value=0, max_value=9999, value=42, step=1)
+    st.caption("Tip: larger C fits training data more strictly; larger gamma makes RBF boundaries more local and complex.")
 
 gamma = custom_gamma if gamma_mode == "custom" else gamma_mode
 if kernel == "linear":
@@ -378,7 +388,7 @@ if kernel == "linear":
 
 view = st.radio(
     "View",
-    ["Concept", "Manim Animation", "WebGL 3D", "2D Boundary", "3D Kernel View", "Model Metrics", "Learning Notes"],
+    ["Concept", "Manim Animation", "WebGL 3D", "2D Boundary", "3D Kernel View", "Model Metrics", "Learning Notes", "Quiz"],
     horizontal=True,
     label_visibility="collapsed",
 )
@@ -405,7 +415,12 @@ if view == "Concept":
         st.write(f"Kernel: `{kernel}`")
         st.write(f"C: `{C:.2f}`")
         st.write(f"Gamma: `{gamma}`")
-        st.write(f"K(x, z) = exp(-{gamma} * ||x - z||^2)")
+        if kernel == "poly":
+            st.write(f"Polynomial degree: `{degree}`")
+        if isinstance(gamma, (int, float)):
+            st.write(f"K(x, z) = exp(-{gamma:.3f} * ||x - z||^2)")
+        else:
+            st.write("For `scale` or `auto`, scikit-learn chooses gamma from the data scale.")
 
 elif view == "Manim Animation":
     st.subheader("Manim concept animation")
@@ -437,10 +452,10 @@ elif view == "2D Boundary":
     from src.plotly_visualizer import plot_2d_decision_boundary
 
     with st.spinner("Training SVM models for the 2D boundary view..."):
-        X, y, bundle, linear_metrics, selected_metrics, support_vectors = get_demo_state(
-            dataset_type, n_samples, noise, kernel, C, gamma, int(random_state)
+        X, y, bundle, linear_metrics, selected_metrics, train_metrics, support_vectors = get_demo_state(
+            dataset_type, n_samples, noise, kernel, C, gamma, degree, int(random_state)
         )
-    render_metric_strip(selected_metrics, len(support_vectors))
+    render_metric_strip(selected_metrics, train_metrics, len(support_vectors), len(X))
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(
@@ -457,10 +472,10 @@ elif view == "3D Kernel View":
     from src.plotly_visualizer import plot_3d_decision_surface, plot_3d_kernel_mapping
 
     with st.spinner("Training SVM models for the 3D view..."):
-        X, y, bundle, linear_metrics, selected_metrics, support_vectors = get_demo_state(
-            dataset_type, n_samples, noise, kernel, C, gamma, int(random_state)
+        X, y, bundle, linear_metrics, selected_metrics, train_metrics, support_vectors = get_demo_state(
+            dataset_type, n_samples, noise, kernel, C, gamma, degree, int(random_state)
         )
-    render_metric_strip(selected_metrics, len(support_vectors))
+    render_metric_strip(selected_metrics, train_metrics, len(support_vectors), len(X))
     c1, c2 = st.columns(2)
     with c1:
         st.plotly_chart(plot_3d_kernel_mapping(X, y), width="stretch")
@@ -471,10 +486,10 @@ elif view == "Model Metrics":
     from src.plotly_visualizer import plot_confusion_matrix, plot_model_comparison
 
     with st.spinner("Training SVM models for metrics..."):
-        X, y, bundle, linear_metrics, selected_metrics, support_vectors = get_demo_state(
-            dataset_type, n_samples, noise, kernel, C, gamma, int(random_state)
+        X, y, bundle, linear_metrics, selected_metrics, train_metrics, support_vectors = get_demo_state(
+            dataset_type, n_samples, noise, kernel, C, gamma, degree, int(random_state)
         )
-    render_metric_strip(selected_metrics, len(support_vectors))
+    render_metric_strip(selected_metrics, train_metrics, len(support_vectors), len(X))
     c1, c2 = st.columns([1.2, 0.8])
     with c1:
         st.plotly_chart(plot_model_comparison(linear_metrics, selected_metrics), width="stretch")
@@ -508,3 +523,47 @@ elif view == "Learning Notes":
         "The 3D mapping tab shows a simple explicit mapping, `z = x1^2 + x2^2`, for intuition. "
         "RBF SVMs use a richer implicit mapping, but the core idea is the same: nonlinear in 2D can become easier to separate in a transformed view."
     )
+
+elif view == "Quiz":
+    st.subheader("Quick SVM quiz")
+    questions = [
+        (
+            "Support vectors 是什麼？",
+            ["離決策邊界最近、會直接影響 margin 的資料點", "所有訓練資料點", "模型預測錯誤的點"],
+            0,
+            "Support vectors 是最靠近 margin 的關鍵樣本，移動它們通常會改變決策邊界。",
+        ),
+        (
+            "C 變大通常代表什麼？",
+            ["模型更不容忍錯誤分類，可能 overfit", "模型完全忽略錯誤分類", "決策邊界一定變成直線"],
+            0,
+            "較大的 C 會更用力懲罰訓練錯誤，訓練分數可能上升，但泛化不一定更好。",
+        ),
+        (
+            "RBF gamma 變大時常見效果是？",
+            ["單一資料點影響範圍變小，邊界更彎曲", "所有點影響範圍變大，邊界更平滑", "support vectors 必定變成 0"],
+            0,
+            "gamma 越大，每個點的作用越局部，容易形成細碎複雜的決策區域。",
+        ),
+        (
+            "最大 margin 的直覺是什麼？",
+            ["讓分隔線離兩類最近點都盡量遠", "讓所有點都落在同一側", "只追求訓練準確率 100%"],
+            0,
+            "SVM 希望找到最有緩衝空間的分隔邊界，這通常能提升泛化能力。",
+        ),
+        (
+            "Kernel trick 主要解決什麼問題？",
+            ["讓非線性資料能在轉換後的特徵空間更容易分開", "把資料量變成 0", "讓模型不需要訓練"],
+            0,
+            "Kernel 透過相似度計算隱式使用高維特徵，不必真的把每個高維座標算出來。",
+        ),
+    ]
+    score = 0
+    for index, (question, options, answer_index, explanation) in enumerate(questions, start=1):
+        choice = st.radio(f"{index}. {question}", options, key=f"quiz_{index}")
+        if choice == options[answer_index]:
+            st.success(explanation)
+            score += 1
+        else:
+            st.info(f"再想一下：{explanation}")
+    st.metric("Current score", f"{score} / {len(questions)}")

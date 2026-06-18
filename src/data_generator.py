@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
-from sklearn.datasets import make_circles, make_moons
+from sklearn.datasets import make_blobs, make_circles, make_classification, make_moons
 
 
 def generate_dataset(
@@ -14,6 +14,28 @@ def generate_dataset(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate a two-feature classification dataset."""
     dataset_type = dataset_type.lower()
+
+    if dataset_type in {"linear", "linearly separable"}:
+        X, y = make_classification(
+            n_samples=n_samples,
+            n_features=2,
+            n_redundant=0,
+            n_informative=2,
+            n_clusters_per_class=1,
+            class_sep=max(0.7, 1.8 - noise * 2),
+            flip_y=min(noise, 0.20),
+            random_state=random_state,
+        )
+        return X, y
+
+    if dataset_type == "blobs":
+        X, y = make_blobs(
+            n_samples=n_samples,
+            centers=2,
+            cluster_std=0.85 + noise * 2.5,
+            random_state=random_state,
+        )
+        return X, y
 
     if dataset_type == "circles":
         return make_circles(
@@ -40,5 +62,4 @@ def generate_dataset(
             y[flip_mask] = 1 - y[flip_mask]
         return X, y
 
-    raise ValueError("dataset_type must be one of: circles, moons, xor")
-
+    raise ValueError("dataset_type must be one of: linear, blobs, circles, moons, xor")

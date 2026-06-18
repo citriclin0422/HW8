@@ -24,7 +24,14 @@ class ModelBundle:
     y_test: np.ndarray
 
 
-def train_svm(X: np.ndarray, y: np.ndarray, kernel: str = "rbf", C: float = 1.0, gamma: float | str = "scale") -> Pipeline:
+def train_svm(
+    X: np.ndarray,
+    y: np.ndarray,
+    kernel: str = "rbf",
+    C: float = 1.0,
+    gamma: float | str = "scale",
+    degree: int = 3,
+) -> Pipeline:
     """Train a scaled SVC model."""
     return Pipeline(
         [
@@ -35,6 +42,7 @@ def train_svm(X: np.ndarray, y: np.ndarray, kernel: str = "rbf", C: float = 1.0,
                     kernel=kernel,
                     C=C,
                     gamma=gamma,
+                    degree=degree,
                 ),
             ),
         ]
@@ -47,6 +55,7 @@ def train_svm_models(
     kernel: str = "rbf",
     C: float = 1.0,
     gamma: float | str = "scale",
+    degree: int = 3,
     test_size: float = 0.25,
     random_state: int = 42,
 ) -> ModelBundle:
@@ -59,7 +68,7 @@ def train_svm_models(
         stratify=y,
     )
     linear_model = train_svm(X_train, y_train, kernel="linear", C=C, gamma="scale")
-    selected_model = train_svm(X_train, y_train, kernel=kernel, C=C, gamma=gamma)
+    selected_model = train_svm(X_train, y_train, kernel=kernel, C=C, gamma=gamma, degree=degree)
     return ModelBundle(linear_model, selected_model, X_train, X_test, y_train, y_test)
 
 

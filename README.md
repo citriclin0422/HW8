@@ -1,41 +1,29 @@
 # SVM Kernel Trick 3D Interactive Demo
 
-An educational Streamlit + Plotly project for learning Support Vector Machines (SVM), maximum margin, support vectors, and the kernel trick through interactive 2D/3D visualizations and a Manim concept animation.
-
 Live demo: [https://hw8svmdemo.streamlit.app/](https://hw8svmdemo.streamlit.app/)
 
+An educational Streamlit project for learning Support Vector Machines (SVM), maximum margin, support vectors, and the kernel trick through interactive 2D/3D visualizations.
 
-## Project Summary
+## 專案摘要
 
-This project demonstrates how SVM handles nonlinear classification problems:
+這是一個 **Support Vector Machine (SVM) Kernel Trick 3D 互動教學展示**。設計重點是讓初學者能看懂：
 
-- Linear SVM finds a maximum-margin decision boundary.
-- Support vectors are the key training points that define the margin.
-- Nonlinear data such as concentric circles cannot be separated well by a single straight line.
-- A teaching mapping `z = x1^2 + x2^2` helps explain the 2D to 3D intuition.
-- RBF SVM uses an implicit high-dimensional feature space through the kernel trick.
-- Streamlit controls let users adjust dataset type, noise, kernel, `C`, and `gamma`.
-- A WebGL 3D view provides a Three.js interaction for the kernel trick workflow.
+- SVM 如何尋找最大 margin 的分類邊界。
+- Support vectors 為什麼是決定邊界的關鍵資料點。
+- 非線性資料，例如 circles、moons、XOR，為什麼無法只靠一條直線分開。
+- Kernel Trick 如何把原本 2D 中難分的資料，轉換成較容易分開的特徵空間。
+- `C`、`gamma`、`degree` 對 overfitting / underfitting 的影響。
 
-## 繁體中文說明
+Streamlit App 目前包含：
 
-本專案是一個 **Support Vector Machine (SVM) Kernel Trick 3D 互動展示教材**，目標是用視覺化方式幫助學習者理解：
-
-- SVM 如何尋找最大間隔（maximum margin）的分類邊界。
-- Support vectors 如何決定分類邊界的位置。
-- 為什麼同心圓、月牙形、XOR 這類非線性資料無法只靠直線分類。
-- Kernel Trick 如何把原本 2D 中難以線性分割的資料，轉換成較容易分割的特徵空間。
-- RBF kernel、`C`、`gamma` 對模型邊界平滑度與 overfitting 的影響。
-
-Streamlit App 中包含：
-
-- Manim 動畫播放器，用來觀看 SVM 概念動畫。
-- WebGL 3D 互動展示，用滑鼠旋轉與縮放觀察 2D 到 3D 映射。
-- 2D decision boundary 圖。
-- 3D kernel mapping 圖。
-- 3D decision function surface 圖。
-- Accuracy、precision、recall、F1、confusion matrix 等模型指標。
-- Support vectors 高亮顯示。
+- **Concept**：SVM 與 Kernel Trick 的教學流程與公式。
+- **Manim Animation**：保留本機預渲染指令；Cloud 端不即時執行 Manim。
+- **WebGL 3D**：使用 Three.js 展示 2D 圓形資料如何 lift 到 `z = x^2 + y^2`。
+- **2D Boundary**：比較 linear SVM 與目前選擇 kernel 的決策邊界。
+- **3D Kernel View**：顯示 kernel mapping 與 decision function surface。
+- **Model Metrics**：顯示 test/train accuracy、generalization gap、F1、support-vector ratio 與 confusion matrix。
+- **Learning Notes**：解釋 `C`、`gamma`、support vectors 與 3D mapping。
+- **Quiz**：用五題小測驗複習 SVM 核心概念。
 
 ## Project Structure
 
@@ -44,9 +32,10 @@ Streamlit App 中包含：
 |-- streamlit_app.py
 |-- app.py
 |-- requirements.txt
+|-- requirements-dev.txt
+|-- runtime.txt
 |-- README.md
 |-- src/
-|   |-- __init__.py
 |   |-- data_generator.py
 |   |-- kernel_transform.py
 |   |-- plotly_visualizer.py
@@ -55,7 +44,6 @@ Streamlit App 中包含：
 |   `-- svm_kernel_intro.py
 |-- outputs/
 |   `-- manim/
-|       `-- videos/
 |-- docs/
 |   |-- index.html
 |   `-- assets/
@@ -80,58 +68,37 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-For local Manim rendering, install the optional development requirements:
-
-```powershell
-python -m pip install -r requirements-dev.txt
-```
-
 ## Run Locally
-
-Recommended Streamlit Cloud-compatible entry point:
 
 ```powershell
 python -m streamlit run streamlit_app.py
 ```
 
-The original local entry point also works:
+The local development entry point also works:
 
 ```powershell
 python -m streamlit run app.py
 ```
 
-## Render The Manim Animation
+## Manim Animation
 
-The repository includes a rendered MP4 target under `outputs/manim` when generated locally. Streamlit Cloud only plays the rendered MP4; it does not install Manim or render videos during deployment.
+Manim should be rendered locally only. Streamlit Community Cloud should not install or run Manim because it requires native dependencies such as Cairo, Pango, FFmpeg, X11, and OpenGL context packages.
 
-To regenerate the animation locally:
+Install optional development dependencies:
 
 ```powershell
 python -m pip install -r requirements-dev.txt
+```
+
+Render locally:
+
+```powershell
 python -m manim -ql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir outputs/manim
 ```
 
-Then open the Streamlit app and go to the **Manim Animation** view. The app automatically finds the newest `.mp4` from:
-
-- `outputs/videos`
-- `outputs/manim`
-- `media/videos`
-
-If no MP4 exists, the app falls back to `Kernel_method.gif`.
-
-## WebGL 3D Interaction
-
-The **WebGL 3D** view embeds a Three.js visualizer inspired by dashboard-style SVM demos:
-
-- Step 1: original 2D concentric rings.
-- Step 2: animated lift to `z = x^2 + y^2`.
-- Step 3: projected nonlinear 2D boundary.
-- Toggles for the separating plane, support vectors, margin rings, and mapping surface.
-- Mouse drag rotates the scene; mouse wheel zooms the camera.
+The deployed Streamlit app currently keeps video playback disabled to preserve page smoothness. The Manim scene and render command remain in the repository for local review.
 
 ## Streamlit Cloud Deployment
-
-Use Streamlit Community Cloud:
 
 1. Push this project to GitHub repository: `citriclin0422/HW8.git`.
 2. Open [https://share.streamlit.io/deploy](https://share.streamlit.io/deploy).
@@ -144,31 +111,32 @@ streamlit_app.py
 
 5. Deploy the app.
 
-Important: `requirements.txt` intentionally excludes `manim`. Manim depends on native Linux graphics libraries such as Cairo, X11, and OpenGL context packages that are not needed for the deployed app. The deployed app uses the pre-rendered MP4 already stored in this repository.
+Recommended Streamlit Cloud settings:
 
-This repository includes `runtime.txt` to request Python 3.12 on Streamlit Cloud. This avoids using a very new Python runtime when ML/visualization packages have not fully stabilized on it.
+- Python version: `3.12`
+- Do not include `manim` in `requirements.txt`
+- Reboot the app after pushing changes that modify imports or cached modules
 
-## GitHub Push Commands
+## Requirements
 
-If this folder has not been initialized as a Git repository yet:
+`requirements.txt` intentionally stays small:
 
-```powershell
-git init
-git add .
-git commit -m "Build SVM Kernel Trick 3D Streamlit demo"
-git branch -M main
-git remote add origin https://github.com/citriclin0422/HW8.git
-git push -u origin main
+```text
+numpy
+scikit-learn
+plotly
+streamlit
 ```
 
-If the remote already exists:
+This keeps Streamlit Cloud deployment stable and avoids native build failures from Manim-related packages.
 
-```powershell
-git add .
-git commit -m "Update SVM Kernel Trick 3D demo"
-git push
-```
+## Troubleshooting
+
+- If the app starts but the page is blank, reboot the app in Streamlit Cloud.
+- If Streamlit Cloud uses Python 3.14, change the Python version to 3.12 in **Manage App -> Settings -> Advanced settings**.
+- If a new function import fails after deployment, push the latest code and reboot the app so Streamlit clears stale module state.
+- If the page feels slow, reduce `Samples` to 100-300 and avoid loading video assets inside the Cloud app.
 
 ## Notes
 
-The explicit 3D mapping `z = x1^2 + x2^2` is used for teaching intuition. A true RBF kernel does not simply map data into one visible 3D dimension; it works through similarities in an implicit high-dimensional feature space.
+The visible 3D mapping `z = x^2 + y^2` is a teaching simplification. A true RBF kernel does not literally map data into one visible 3D axis; it computes similarities in an implicit high-dimensional feature space.
