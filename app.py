@@ -401,34 +401,12 @@ if view == "Concept":
 
 elif view == "Manim Animation":
     st.subheader("Manim concept animation")
-    manim_video = find_manim_video()
-    if manim_video:
-        video_bytes = manim_video.read_bytes()
-        st.video(video_bytes, format="video/mp4")
-        st.caption(
-            f"Loaded rendered Manim video: `{manim_video.relative_to(PROJECT_ROOT)}` "
-            f"({len(video_bytes) / 1024 / 1024:.2f} MB)"
-        )
-        st.download_button(
-            "Download MP4",
-            data=video_bytes,
-            file_name="SVMKernelIntro.mp4",
-            mime="video/mp4",
-        )
-        if FALLBACK_GIF.exists():
-            with st.expander("Show GIF fallback preview"):
-                st.image(str(FALLBACK_GIF), caption="GIF fallback preview")
-    elif FALLBACK_GIF.exists():
-        st.image(str(FALLBACK_GIF), caption="Fallback animation preview. Render the Manim scene to replace this with MP4.")
-    else:
-        st.info("No rendered Manim video or fallback GIF was found yet.")
-
-    st.write(
-        "Render the MP4 once, then reload this app. The player will automatically pick up the newest `.mp4` "
-        "from `outputs/videos`, `outputs/manim`, or Manim's default `media/videos` folder."
+    st.info(
+        "Video playback is temporarily disabled in the Streamlit app to test page performance. "
+        "The rendered MP4 remains in the GitHub repository, but this page does not load or display it."
     )
     st.code(
-        "manim -pql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir outputs/manim",
+        "python -m manim -ql manim_scenes/svm_kernel_intro.py SVMKernelIntro --media_dir outputs/manim",
         language="powershell",
     )
 
