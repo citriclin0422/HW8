@@ -24,6 +24,7 @@ This project demonstrates how SVM handles nonlinear classification problems:
 - A teaching mapping `z = x1^2 + x2^2` helps explain the 2D to 3D intuition.
 - RBF SVM uses an implicit high-dimensional feature space through the kernel trick.
 - Streamlit controls let users adjust dataset type, noise, kernel, `C`, and `gamma`.
+- A WebGL 3D tab provides a Three.js interaction for the kernel trick workflow.
 
 ## 繁體中文說明
 
@@ -38,6 +39,7 @@ This project demonstrates how SVM handles nonlinear classification problems:
 Streamlit App 中包含：
 
 - Manim 動畫播放器，用來觀看 SVM 概念動畫。
+- WebGL 3D 互動展示，用滑鼠旋轉與縮放觀察 2D 到 3D 映射。
 - 2D decision boundary 圖。
 - 3D kernel mapping 圖。
 - 3D decision function surface 圖。
@@ -125,6 +127,16 @@ Then open the Streamlit app and go to the **Manim Animation** tab. The app autom
 - `media/videos`
 
 If no MP4 exists, the app falls back to `Kernel_method.gif`.
+
+## WebGL 3D Interaction
+
+The **WebGL 3D** tab embeds a Three.js visualizer inspired by dashboard-style SVM demos:
+
+- Step 1: original 2D concentric rings.
+- Step 2: animated lift to `z = x^2 + y^2`.
+- Step 3: projected nonlinear 2D boundary.
+- Toggles for the separating plane, support vectors, margin rings, and mapping surface.
+- Mouse drag rotates the scene; mouse wheel zooms the camera.
 
 ## Streamlit Cloud Deployment
 

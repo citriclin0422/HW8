@@ -158,23 +158,27 @@ class SVMKernelIntro(ThreeDScene):
         self.play(FadeOut(projection_title), FadeOut(axes2), FadeOut(dots2), FadeOut(ring_boundary), FadeOut(projection_note))
 
     def _rbf_summary_scene(self):
-        title = Text("Real RBF SVM: no need to draw the full feature space", font_size=32, color=BLUE).to_edge(np.array([0, 1, 0]))
+        title = Text("Real RBF SVM: implicit high-dimensional separation", font_size=30, color=BLUE).to_edge(np.array([0, 1, 0]))
         left = VGroup(
-            Text("RBF kernel", font_size=30, color=YELLOW),
-            Text("K(x, z) = exp(-gamma * ||x - z||^2)", font_size=24),
-            Text("Only similarities are computed.", font_size=24),
-        ).arrange(np.array([0, -1, 0]), aligned_edge=np.array([-1, 0, 0]), buff=0.28).shift((-2.6, 0.9, 0))
+            Text("RBF kernel", font_size=28, color=YELLOW),
+            Text("K(x, z) = exp(-gamma * ||x - z||^2)", font_size=20),
+            Text("The model computes similarities,", font_size=20),
+            Text("not a visible 3D coordinate by hand.", font_size=20),
+        ).arrange(np.array([0, -1, 0]), aligned_edge=np.array([-1, 0, 0]), buff=0.24).shift((-3.05, 1.0, 0))
         right = VGroup(
-            Text("Parameter intuition", font_size=30, color=GREEN),
-            Text("C small: wider, smoother margin", font_size=23),
-            Text("C large: fits training data harder", font_size=23),
-            Text("gamma small: smooth influence", font_size=23),
-            Text("gamma large: local, detailed boundary", font_size=23),
-        ).arrange(np.array([0, -1, 0]), aligned_edge=np.array([-1, 0, 0]), buff=0.22).shift((1.6, 0.65, 0))
-        arrow = Arrow(start=(-0.6, -1.4, 0), end=(0.9, -1.4, 0), color=YELLOW)
+            Text("Parameter intuition", font_size=28, color=GREEN),
+            Text("C small: wider, smoother margin", font_size=20),
+            Text("C large: fits training data harder", font_size=20),
+            Text("gamma small: broad influence", font_size=20),
+            Text("gamma large: local detailed boundary", font_size=20),
+        ).arrange(np.array([0, -1, 0]), aligned_edge=np.array([-1, 0, 0]), buff=0.22).shift((2.25, 0.95, 0))
+        arrow = Arrow(start=(-0.65, -1.35, 0), end=(0.95, -1.35, 0), color=YELLOW)
         start = Text("2D nonlinear data", font_size=24).next_to(arrow, np.array([-1, 0, 0]))
         end = Text("SVM decision function", font_size=24).next_to(arrow, np.array([1, 0, 0]))
-        final = Text("SVM finds a maximum-margin separator; kernels make nonlinear boundaries possible.", font_size=26, color=WHITE).to_edge(np.array([0, -1, 0]))
+        final = VGroup(
+            Text("SVM finds a maximum-margin separator.", font_size=23, color=WHITE),
+            Text("Kernels make nonlinear boundaries possible.", font_size=23, color=WHITE),
+        ).arrange(np.array([0, -1, 0]), buff=0.14).move_to((0, -2.55, 0))
 
         self.play(Write(title))
         self.play(FadeIn(left), FadeIn(right))
