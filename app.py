@@ -133,9 +133,14 @@ def render_chapter_buttons(current_view: str) -> str:
     cols = st.columns(4)
     selected = current_view
     for index, (chapter, label, caption) in enumerate(CHAPTERS):
-        active_marker = " [current]" if chapter == current_view else ""
         with cols[index % 4]:
-            if st.button(f"{label}{active_marker}\n{caption}", key=f"chapter_btn_{chapter}", use_container_width=True):
+            button_type = "primary" if chapter == current_view else "secondary"
+            if st.button(
+                f"{label}\n{caption}",
+                key=f"chapter_btn_{chapter}",
+                use_container_width=True,
+                type=button_type,
+            ):
                 st.session_state["chapter"] = chapter
                 selected = chapter
                 st.rerun()
